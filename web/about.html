@@ -27,27 +27,87 @@
         <main class="main-content">
             <div class="article-container">
                 <header class="article-header">
-                    <h1>Project Documentation</h1>
-                    <p>Understanding the Adaptive Protection Engine</p>
+                    <h1>Technical Documentation</h1>
+                    <p>Algorithm Deep-Dive & System Architecture</p>
                 </header>
 
                 <div class="article-content">
-                    <h2>How it Works</h2>
-                    <p>RelayAdapt is an end-to-end framework for microgrid protection. It solves the critical problem of <strong>Relay Blindness</strong> caused by modern Inverter-Based Resources (IBRs).</p>
+                    <section>
+                        <h2>1. Introduction to the Problem</h2>
+                        <p>Inverter-Based Resources (IBRs) restrict their fault current output to 1.1x–1.5x of their rating. Traditional overcurrent relays fail to operate because they expect high fault currents from synchronous generators. <strong>RelayAdapt</strong> solves this by dynamically re-tuning relay settings based on the microgrid's operational state.</p>
+                    </section>
 
-                    <h2>Core Architecture</h2>
-                    <ul>
-                        <li><strong>System Model:</strong> A 4-bus nodal analysis engine built with NumPy.</li>
-                        <li><strong>Adaptive Logic:</strong> Real-time recalculation of \(I_s\) (Pickup) and \(TMS\) (Time Multiplier) settings.</li>
-                        <li><strong>Machine Learning:</strong> A Multi-Layer Perceptron (MLP) that predicts optimal settings in milliseconds.</li>
-                    </ul>
+                    <section>
+                        <h2>2. Nodal Impedance Solver (system_model.py)</h2>
+                        <p>The core physics engine simulates a 4-bus radial feeder. It calculates fault currents at each node by solving the nodal equations. When the IBR is active, the total fault current sensed by the relay is the sum of grid and inverter contributions.</p>
+                        <div class="equation-code">
+<pre><code># system_model.py snippets
+def get_fault_current(self, ibr_active):
+    if ibr_active:
+        # Addition of inverter limited current
+        return self.i_grid_fault_max + self.i_ibr_max
+    else:
+        return self.i_grid_fault_max</code></pre>
+                        </div>
+                    </section>
 
-                    <h2>The Visualization Engine</h2>
-                    <p>The dashboard you see on the main page uses <strong>Chart.js</strong> with a logarithmic scale to replicate standard industrial protection coordination studies. It allows engineers to stress-test settings by moving sliders and observing the "Adaptive Shift" in the Relay curves.</p>
+                    <section>
+                        <h2>3. Adaptive Logic (adaptive_logic.py)</h2>
+                        <p>The adaptation engine performs two critical steps: <strong>Pickup Selection</strong> and <strong>TMS Recalculation</strong>.</p>
+                        <ul>
+                            <li><strong>Dynamic Pickup (\(I_s\)):</strong> Automatically adjusted to 1.25x or 1.3x of load current depending on the grid's sensitivity. It ensures the relay stays sensitive to low-current IBR faults.</li>
+                            <li><strong>TMS Recalculation:</strong> Solves the IEC inverse-time equation for a target operating speed (typically 0.25s).</li>
+                        </ul>
+                        <div class="equation-code">
+<pre><code># adaptive_logic.py snippets
+# Formula: t = TMS * (k / ((I/Is)^alpha - 1))
+# Solved for TMS:
+tms = target_time / (curve.k / (pow(psm, curve.alpha) - 1))
+tms = max(0.05, min(1.1, tms)) # Safety clamping</code></pre>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>4. Machine Learning Regressor (ml_model.py)</h2>
+                        <p>While analytical formulas are exact, they can be slow to compute in high-speed protective devices. We implemented a <strong>Multi-Layer Perceptron (MLP)</strong> to predict these settings in microseconds.</p>
+                        <p>The model architecture consists of an input layer (Grid State, Fault Info), a hidden layer with ReLU activation, and an output layer for TMS prediction.</p>
+                        <div class="equation-code">
+<pre><code># ml_model.py architecture
+class RelayMLP:
+    def forward(self, x):
+        h = self.relu(np.dot(x, self.w1) + self.b1)
+        y = np.dot(h, self.w2) + self.b2
+        return y</code></pre>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>5. Real-Time Visualization</h2>
+                        <p>The front-end ports these Python behaviors to JavaScript using <strong>Chart.js</strong>. By lockings the Y-axis and guarding against invalid Plug Setting Multipliers (PSM \(\leq\) 1), we provide a stable environment to visualize how the protection system "breathes" as IBRs are added or removed from the grid.</p>
+                    </section>
                 </div>
             </div>
         </main>
     </div>
     <script>lucide.createIcons();</script>
+    <style>
+        .equation-code {
+            background: #1e293b;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--accent);
+            overflow-x: auto;
+        }
+        .equation-code pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+        }
+        .equation-code code {
+            display: block;
+        }
+    </style>
 </body>
 </html>
