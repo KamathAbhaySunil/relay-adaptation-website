@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next-Gen Adaptive Relay Protection</title>
+    <meta name="description" content="Interactive dashboard for adaptive relay protection in inverter-based microgrids.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i data-lucide="shield-check" class="logo-icon"></i>
+                <h1>RelayAdapt</h1>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="control-group">
+                    <h3>System Parameters</h3>
+                    <div class="input-field">
+                        <label for="fault-current">Fault Current (I<sub>f</sub>)</label>
+                        <input type="range" id="fault-current" min="1000" max="8000" value="5000" step="100">
+                        <span class="value-display"><span id="fault-current-val">5000</span> A</span>
+                    </div>
+                    <div class="input-field">
+                        <label for="load-current">Load Current (I<sub>l</sub>)</label>
+                        <input type="range" id="load-current" min="100" max="1500" value="800" step="50">
+                        <span class="value-display"><span id="load-current-val">800</span> A</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Adaptive Controls</h3>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="ibr-toggle">
+                        <span class="slider"></span>
+                        <span class="toggle-label">IBR Contribution Active</span>
+                    </label>
+                </div>
+
+                <div class="control-group">
+                    <h3>IEC Curve Selection</h3>
+                    <select id="curve-type">
+                        <option value="standard">Standard Inverse</option>
+                        <option value="very">Very Inverse</option>
+                        <option value="extreme">Extremely Inverse</option>
+                    </select>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="badge">Adaptive Mode: <span id="mode-status">OFF</span></div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="breadcrumb">Research Dashboard / Adaptive Protection</div>
+                <div class="header-actions">
+                    <a href="https://github.com/KamathAbhaySunil/relay-adaptation-website" target="_blank" class="github-link">
+                        <i data-lucide="github"></i>
+                        Source
+                    </a>
+                </div>
+            </header>
+
+            <section class="dashboard-grid">
+                <!-- Metrics Card -->
+                <div class="card metrics-card">
+                    <div class="metric">
+                        <span class="label">Pickup Current (I<sub>s</sub>)</span>
+                        <span class="value" id="is-value">1000 A</span>
+                    </div>
+                    <div class="metric highlight">
+                        <span class="label">Time Multiplier (TMS)</span>
+                        <span class="value" id="tms-value">0.10</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Trip Time @ I<sub>f</sub></span>
+                        <span class="value" id="trip-time-value">0.25s</span>
+                    </div>
+                </div>
+
+                <!-- Chart Card -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h2>Time-Current Characteristics (TCC)</h2>
+                        <i data-lucide="info" class="hint-icon" title="Log-log plot showing relay operation speed relative to fault current."></i>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="tccChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Theory/Description Card -->
+                <div class="card info-card">
+                    <div class="card-header">
+                        <h2>Relay Adaptation Logic</h2>
+                    </div>
+                    <div class="info-content">
+                        <p>This interactive simulation demonstrates the adaptive setting recalculation based on IEC 60255 standards. When <strong>IBR (Inverter-Based Resource)</strong> contribution is active, the system automatically tightens the coordination margin to maintain speed despite current-limited fault contributions.</p>
+                        <div class="equation">
+                            t = TMS \cdot \frac{k}{(I/I_s)^\alpha - 1}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="simulation.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
