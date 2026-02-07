@@ -1,11 +1,12 @@
 :root {
     --bg-main: #0f172a;
     --bg-card: rgba(30, 41, 59, 0.7);
+    --bg-sidebar: rgba(15, 23, 42, 0.95);
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --accent: #38bdf8;
     --accent-hover: #0ea5e9;
-    --border: rgba(255, 255, 255, 0.1);
+    --border: rgba(255, 255, 255, 0.08);
     --glass-effect: blur(12px) saturate(180%);
 }
 
@@ -19,8 +20,9 @@ body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-main);
     color: var(--text-primary);
+    line-height: 1.6;
+    height: 100vh;
     overflow: hidden;
-    line-height: 1.5;
 }
 
 .app-container {
@@ -28,16 +30,15 @@ body {
     height: 100vh;
 }
 
-/* Sidebar */
+/* Sidebar & Navigation */
 .sidebar {
-    width: 300px;
-    background: var(--bg-card);
-    backdrop-filter: var(--glass-effect);
+    width: 280px;
+    background: var(--bg-sidebar);
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    padding: 2rem 1.5rem;
-    z-index: 10;
+    padding: 2rem 1.25rem;
+    overflow-y: auto;
 }
 
 .sidebar-header {
@@ -49,45 +50,85 @@ body {
 
 .logo-icon {
     color: var(--accent);
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
 }
 
 .sidebar-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    letter-spacing: -0.025em;
 }
 
-.sidebar-nav {
-    flex: 1;
-}
-
-.control-group {
+.nav-section {
     margin-bottom: 2rem;
 }
 
-.control-group h3 {
-    font-size: 0.75rem;
+.nav-section h3 {
+    font-size: 0.7rem;
     text-transform: uppercase;
     color: var(--text-secondary);
     letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    padding-left: 0.5rem;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.nav-item.active {
+    background: rgba(56, 189, 248, 0.1);
+    color: var(--accent);
+}
+
+.nav-item svg {
+    width: 18px;
+    height: 18px;
+}
+
+.control-group {
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    margin-top: 1rem;
+}
+
+.control-group h3 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
     margin-bottom: 1rem;
 }
 
+/* Forms & Sliders */
 .input-field {
     margin-bottom: 1.25rem;
 }
 
 .input-field label {
     display: block;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     margin-bottom: 0.5rem;
 }
 
 input[type="range"] {
     width: 100%;
-    margin-bottom: 0.25rem;
+    accent-color: var(--accent);
+    background: rgba(15, 23, 42, 0.5);
+    height: 4px;
+    border-radius: 2px;
 }
 
 .value-display {
@@ -101,10 +142,8 @@ input[type="range"] {
     align-items: center;
     gap: 0.75rem;
     cursor: pointer;
-}
-
-.toggle-label {
-    font-size: 0.875rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
 }
 
 select {
@@ -114,24 +153,10 @@ select {
     color: var(--text-primary);
     padding: 0.5rem;
     border-radius: 6px;
-    outline: none;
+    font-size: 0.85rem;
 }
 
-.sidebar-footer {
-    margin-top: auto;
-}
-
-.badge {
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    padding: 0.5rem;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    text-align: center;
-}
-
-/* Main Content */
+/* Main Content Area */
 .main-content {
     flex: 1;
     display: flex;
@@ -149,7 +174,7 @@ select {
 
 .breadcrumb {
     color: var(--text-secondary);
-    font-size: 0.875rem;
+    font-size: 0.85rem;
 }
 
 .github-link {
@@ -158,44 +183,27 @@ select {
     gap: 0.5rem;
     color: var(--text-primary);
     text-decoration: none;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     background: var(--bg-card);
     padding: 0.5rem 1rem;
     border-radius: 8px;
     border: 1px solid var(--border);
-    transition: background 0.2s;
 }
 
-.github-link:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
+/* Dashboard Grid */
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto 1fr;
     gap: 1.5rem;
-    height: 100%;
 }
 
 .card {
     background: var(--bg-card);
     backdrop-filter: var(--glass-effect);
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 1.5rem;
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.card h2 {
-    font-size: 1.125rem;
-    font-weight: 600;
 }
 
 .metrics-card {
@@ -204,35 +212,33 @@ select {
     justify-content: space-around;
 }
 
-.metric {
-    display: flex;
-    flex-direction: column;
-}
-
 .metric .label {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
+    font-size: 0.7rem;
     text-transform: uppercase;
-    margin-bottom: 0.25rem;
+    color: var(--text-secondary);
 }
 
 .metric .value {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: 700;
     font-family: 'JetBrains Mono', monospace;
 }
 
-.metric.highlight .value {
+.highlight .value {
     color: var(--accent);
 }
 
 .chart-card {
     grid-row: span 1;
+    min-height: 450px; /* Fixed height for stability */
+    display: flex;
+    flex-direction: column;
 }
 
 .chart-wrapper {
-    height: calc(100% - 3rem);
+    flex: 1;
     position: relative;
+    max-height: 400px;
 }
 
 .info-card {
@@ -242,27 +248,73 @@ select {
 
 .info-content p {
     color: var(--text-secondary);
+    font-size: 0.95rem;
     margin-bottom: 1.5rem;
 }
 
 .equation {
-    background: #1e293b;
-    padding: 1rem;
+    background: #0f172a;
+    padding: 1.5rem;
     border-radius: 12px;
     font-family: 'JetBrains Mono', monospace;
     text-align: center;
     color: var(--accent);
-    font-size: 1.125rem;
-    border-left: 4px solid var(--accent);
+    font-size: 1.1rem;
+    border: 1px solid var(--border);
+}
+
+/* Paper Page Styling */
+.article-container {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+
+.article-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2rem;
+}
+
+.article-header h1 {
+    font-size: 2.25rem;
+    margin-bottom: 1rem;
+}
+
+.authors {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.article-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.article-content h2 {
+    margin: 2.5rem 0 1rem;
+    font-size: 1.5rem;
+    color: var(--accent);
+}
+
+.article-content p {
+    margin-bottom: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.abstract {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 2rem;
+    border-radius: 12px;
+    font-style: italic;
+    margin-bottom: 2rem;
 }
 
 @media (max-width: 1024px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-    .metrics-card {
-        grid-column: span 1;
-        flex-direction: column;
-        gap: 1.5rem;
-    }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .metrics-card { flex-direction: column; gap: 1rem; }
 }

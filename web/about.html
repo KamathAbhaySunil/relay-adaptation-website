@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About | RelayAdapt</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i data-lucide="shield-check" class="logo-icon"></i>
+                <h1>RelayAdapt</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h3>Navigation</h3>
+                    <a href="index.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+                    <a href="paper.html" class="nav-item"><i data-lucide="file-text"></i> IEEE Paper</a>
+                    <a href="about.html" class="nav-item active"><i data-lucide="info"></i> About Project</a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="article-container">
+                <header class="article-header">
+                    <h1>Project Documentation</h1>
+                    <p>Understanding the Adaptive Protection Engine</p>
+                </header>
+
+                <div class="article-content">
+                    <h2>How it Works</h2>
+                    <p>RelayAdapt is an end-to-end framework for microgrid protection. It solves the critical problem of <strong>Relay Blindness</strong> caused by modern Inverter-Based Resources (IBRs).</p>
+
+                    <h2>Core Architecture</h2>
+                    <ul>
+                        <li><strong>System Model:</strong> A 4-bus nodal analysis engine built with NumPy.</li>
+                        <li><strong>Adaptive Logic:</strong> Real-time recalculation of \(I_s\) (Pickup) and \(TMS\) (Time Multiplier) settings.</li>
+                        <li><strong>Machine Learning:</strong> A Multi-Layer Perceptron (MLP) that predicts optimal settings in milliseconds.</li>
+                    </ul>
+
+                    <h2>The Visualization Engine</h2>
+                    <p>The dashboard you see on the main page uses <strong>Chart.js</strong> with a logarithmic scale to replicate standard industrial protection coordination studies. It allows engineers to stress-test settings by moving sliders and observing the "Adaptive Shift" in the Relay curves.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

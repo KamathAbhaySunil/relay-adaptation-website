@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Next-Gen Adaptive Relay Protection</title>
-    <meta name="description" content="Interactive dashboard for adaptive relay protection in inverter-based microgrids.">
+    <title>Dashboard | RelayAdapt</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,6 +21,13 @@
             </div>
             
             <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h3>Navigation</h3>
+                    <a href="index.html" class="nav-item active"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+                    <a href="paper.html" class="nav-item"><i data-lucide="file-text"></i> IEEE Paper</a>
+                    <a href="about.html" class="nav-item"><i data-lucide="info"></i> About Project</a>
+                </div>
+
                 <div class="control-group">
                     <h3>System Parameters</h3>
                     <div class="input-field">
@@ -46,7 +52,7 @@
                 </div>
 
                 <div class="control-group">
-                    <h3>IEC Curve Selection</h3>
+                    <h3>IEC Curve Type</h3>
                     <select id="curve-type">
                         <option value="standard">Standard Inverse</option>
                         <option value="very">Very Inverse</option>
@@ -56,7 +62,7 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="badge">Adaptive Mode: <span id="mode-status">OFF</span></div>
+                <div class="badge">Status: <span id="mode-status">FIXED</span></div>
             </div>
         </aside>
 
@@ -73,42 +79,39 @@
             </header>
 
             <section class="dashboard-grid">
-                <!-- Metrics Card -->
                 <div class="card metrics-card">
                     <div class="metric">
-                        <span class="label">Pickup Current (I<sub>s</sub>)</span>
+                        <span class="label">Pickup (I<sub>s</sub>)</span>
                         <span class="value" id="is-value">1000 A</span>
                     </div>
                     <div class="metric highlight">
-                        <span class="label">Time Multiplier (TMS)</span>
+                        <span class="label">TMS</span>
                         <span class="value" id="tms-value">0.10</span>
                     </div>
                     <div class="metric">
-                        <span class="label">Trip Time @ I<sub>f</sub></span>
+                        <span class="label">Trip Time</span>
                         <span class="value" id="trip-time-value">0.25s</span>
                     </div>
                 </div>
 
-                <!-- Chart Card -->
                 <div class="card chart-card">
                     <div class="card-header">
-                        <h2>Time-Current Characteristics (TCC)</h2>
-                        <i data-lucide="info" class="hint-icon" title="Log-log plot showing relay operation speed relative to fault current."></i>
+                        <h2>TCC Curve Adaptation</h2>
+                        <i data-lucide="maximize-2" class="hint-icon"></i>
                     </div>
                     <div class="chart-wrapper">
                         <canvas id="tccChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Theory/Description Card -->
                 <div class="card info-card">
                     <div class="card-header">
-                        <h2>Relay Adaptation Logic</h2>
+                        <h2>Real-time Adaptation</h2>
                     </div>
                     <div class="info-content">
-                        <p>This interactive simulation demonstrates the adaptive setting recalculation based on IEC 60255 standards. When <strong>IBR (Inverter-Based Resource)</strong> contribution is active, the system automatically tightens the coordination margin to maintain speed despite current-limited fault contributions.</p>
+                        <p>This chart shows the <strong>Time-Current Characteristic</strong>. The blue line is the adaptive curve. Use the <strong>IBR toggle</strong> to see how the system pulls the curve faster to compensate for limited fault current.</p>
                         <div class="equation">
-                            t = TMS \cdot \frac{k}{(I/I_s)^\alpha - 1}
+                            t = TMS \times \frac{k}{(I/I_s)^\alpha - 1}
                         </div>
                     </div>
                 </div>

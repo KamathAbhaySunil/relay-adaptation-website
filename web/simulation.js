@@ -15,7 +15,6 @@ let state = {
     tms: 0.1
 };
 
-// Chart Instance
 let tccChart = null;
 
 function calculateSettings() {
@@ -32,6 +31,7 @@ function calculateSettings() {
     }
 
     // 2. Calculate TMS
+    // Target time is 0.25s
     const targetTime = 0.25;
     const curve = CURVES[state.curveType];
     const psm = state.faultCurrent / state.is;
@@ -42,6 +42,7 @@ function calculateSettings() {
         state.tms = targetTime / (curve.k / (Math.pow(psm, curve.alpha) - 1));
     }
 
+    // Clamp TMS to prevent curve "flying away"
     state.tms = Math.max(0.05, Math.min(1.1, state.tms));
 
     updateUI();
@@ -51,18 +52,20 @@ function updateUI() {
     document.getElementById('fault-current-val').textContent = state.faultCurrent;
     document.getElementById('load-current-val').textContent = state.loadCurrent;
     document.getElementById('mode-status').textContent = state.ibrActive ? 'ADAPTIVE' : 'FIXED';
-    document.getElementById('mode-status').parentElement.style.borderColor = state.ibrActive ? '#38bdf8' : '#94a3b8';
+    
+    const badge = document.getElementById('mode-status').parentElement;
+    badge.style.background = state.ibrActive ? 'rgba(56, 189, 248, 0.1)' : 'rgba(255, 255, 255, 0.05)';
+    badge.style.borderColor = state.ibrActive ? 'var(--accent)' : 'var(--border)';
 
-    document.getElementById('is-value').textContent = state.is.toFixed(2) + ' A';
+    document.getElementById('is-value').textContent = state.is.toFixed(0) + ' A';
     document.getElementById('tms-value').textContent = state.tms.toFixed(3);
     
-    // Trip time check
     const psm = state.faultCurrent / state.is;
-    let tripTimeText = "No Trip";
+    let tripTimeText = "---";
     if (psm > 1.01) {
         const curve = CURVES[state.curveType];
-        const tripTime = state.tms * (curve.k / (Math.pow(psm, curve.alpha) - 1));
-        tripTimeText = tripTime.toFixed(3) + 's';
+        const t = state.tms * (curve.k / (Math.pow(psm, curve.alpha) - 1));
+        tripTimeText = t.toFixed(3) + 's';
     }
     document.getElementById('trip-time-value').textContent = tripTimeText;
 
@@ -70,31 +73,38 @@ function updateUI() {
 }
 
 function updateChart() {
+    if (!tccChart) return;
+
     const curve = CURVES[state.curveType];
     const dataPoints = [];
     
-    // Generate scale points
-    for (let psm = 1.1; psm <= 20; psm += 0.5) {
+    // Generate scale points from 1.1x Is up to 20x Is
+    // We limit current range for visual stability
+    const maxI = 20000;
+    const step = 200;
+    
+    for (let i = state.is * 1.1; i <= maxI; i += step) {
+        const psm = i / state.is;
         let t = state.tms * (curve.k / (Math.pow(psm, curve.alpha) - 1));
-        // Clamp top end for log scale stability
-        t = Math.min(50, t);
-        dataPoints.push({ x: psm * state.is, y: t });
+        // Clamp t for stability on log scale
+        if (t > 0 && t < 100) {
+            dataPoints.push({ x: i, y: t });
+        }
     }
 
     const psmCurrent = state.faultCurrent / state.is;
-    let currentFaultPoint = null;
-
-    if (psmCurrent > 1.01) {
-        currentFaultPoint = {
+    let currentPoint = null;
+    if (psmCurrent > 1.05) {
+        currentPoint = {
             x: state.faultCurrent,
             y: state.tms * (curve.k / (Math.pow(psmCurrent, curve.alpha) - 1))
         };
     }
 
     tccChart.data.datasets[0].data = dataPoints;
-    tccChart.data.datasets[1].data = currentFaultPoint ? [currentFaultPoint] : [];
+    tccChart.data.datasets[1].data = currentPoint ? [currentPoint] : [];
     
-    // Update without animation to prevent display artifacts during rapid slider movement
+    // Use 'none' to skip animations which cause vertical jump artifacts
     tccChart.update('none');
 }
 
@@ -104,20 +114,20 @@ function initChart() {
         type: 'line',
         data: {
             datasets: [{
-                label: 'Relay Characteristic',
+                label: 'TCC Curve',
                 borderColor: '#38bdf8',
-                backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                backgroundColor: 'rgba(56, 189, 248, 0.05)',
                 borderWidth: 2,
                 pointRadius: 0,
                 fill: true,
-                tension: 0.4,
+                tension: 0.3,
                 data: []
             }, {
-                label: 'Current Operating Point',
-                borderColor: '#f8fafc',
-                backgroundColor: '#f8fafc',
+                label: 'Fault Point',
+                borderColor: '#ffffff',
+                backgroundColor: '#38bdf8',
                 pointRadius: 6,
-                pointHoverRadius: 8,
+                pointBorderWidth: 2,
                 showLine: false,
                 data: []
             }]
@@ -125,21 +135,25 @@ function initChart() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: false,
             scales: {
                 x: {
                     type: 'logarithmic',
-                    title: { display: true, text: 'Current (Amperes)', color: '#94a3b8' },
+                    min: 1000,
+                    max: 20000,
+                    title: { display: true, text: 'Current (A)', color: '#94a3b8' },
                     grid: { color: 'rgba(255, 255, 255, 0.05)' },
                     ticks: { color: '#94a3b8' }
                 },
                 y: {
                     type: 'logarithmic',
                     min: 0.01,
-                    max: 10,
-                    title: { display: true, text: 'Time (Seconds)', color: '#94a3b8' },
+                    max: 10, // FIX: Constant max to prevent "falling"
+                    title: { display: true, text: 'Time (s)', color: '#94a3b8' },
                     grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#94a3b8' }
+                    ticks: { 
+                        color: '#94a3b8',
+                        callback: value => value.toFixed(2)
+                    }
                 }
             },
             plugins: {
@@ -149,29 +163,30 @@ function initChart() {
     });
 }
 
-// Event Listeners
-document.getElementById('fault-current').addEventListener('input', (e) => {
-    state.faultCurrent = parseFloat(e.target.value);
-    calculateSettings();
-});
+// Listeners
+if (document.getElementById('fault-current')) {
+    document.getElementById('fault-current').addEventListener('input', e => {
+        state.faultCurrent = parseFloat(e.target.value);
+        calculateSettings();
+    });
 
-document.getElementById('load-current').addEventListener('input', (e) => {
-    state.loadCurrent = parseFloat(e.target.value);
-    calculateSettings();
-});
+    document.getElementById('load-current').addEventListener('input', e => {
+        state.loadCurrent = parseFloat(e.target.value);
+        calculateSettings();
+    });
 
-document.getElementById('ibr-toggle').addEventListener('change', (e) => {
-    state.ibrActive = e.target.checked;
-    calculateSettings();
-});
+    document.getElementById('ibr-toggle').addEventListener('change', e => {
+        state.ibrActive = e.target.checked;
+        calculateSettings();
+    });
 
-document.getElementById('curve-type').addEventListener('change', (e) => {
-    state.curveType = e.target.value;
-    calculateSettings();
-});
+    document.getElementById('curve-type').addEventListener('change', e => {
+        state.curveType = e.target.value;
+        calculateSettings();
+    });
 
-// Init
-window.addEventListener('DOMContentLoaded', () => {
-    initChart();
-    calculateSettings();
-});
+    window.addEventListener('DOMContentLoaded', () => {
+        initChart();
+        calculateSettings();
+    });
+}
