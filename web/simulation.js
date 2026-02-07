@@ -20,7 +20,6 @@ let tccChart = null;
 
 function calculateSettings() {
     // 1. Calculate Is (Pickup)
-    // Using the same logic as adaptive_logic.py
     if (state.ibrActive) {
         state.is = 1.3 * state.loadCurrent;
     } else {
@@ -33,7 +32,6 @@ function calculateSettings() {
     }
 
     // 2. Calculate TMS
-    // Target time is 0.25s for primary protection
     const targetTime = 0.25;
     const curve = CURVES[state.curveType];
     const psm = state.faultCurrent / state.is;
@@ -41,12 +39,9 @@ function calculateSettings() {
     if (psm <= 1) {
         state.tms = 0.1;
     } else {
-        // t = TMS * (k / ((I/Is)^alpha - 1))
-        // TMS = t / (k / (psm^alpha - 1))
         state.tms = targetTime / (curve.k / (Math.pow(psm, curve.alpha) - 1));
     }
 
-    // Clamp TMS
     state.tms = Math.max(0.05, Math.min(1.1, state.tms));
 
     updateUI();
@@ -62,13 +57,14 @@ function updateUI() {
     document.getElementById('tms-value').textContent = state.tms.toFixed(3);
     
     // Trip time check
-    const curve = CURVES[state.curveType];
     const psm = state.faultCurrent / state.is;
-    let tripTime = Infinity;
-    if (psm > 1) {
-        tripTime = state.tms * (curve.k / (Math.pow(psm, curve.alpha) - 1));
+    let tripTimeText = "No Trip";
+    if (psm > 1.01) {
+        const curve = CURVES[state.curveType];
+        const tripTime = state.tms * (curve.k / (Math.pow(psm, curve.alpha) - 1));
+        tripTimeText = tripTime.toFixed(3) + 's';
     }
-    document.getElementById('trip-time-value').textContent = tripTime.toFixed(3) + 's';
+    document.getElementById('trip-time-value').textContent = tripTimeText;
 
     updateChart();
 }
@@ -77,21 +73,29 @@ function updateChart() {
     const curve = CURVES[state.curveType];
     const dataPoints = [];
     
-    // Generate logarithmic scale points for the curve
-    // From 1.1 * Is to 20 * Is
+    // Generate scale points
     for (let psm = 1.1; psm <= 20; psm += 0.5) {
-        const t = state.tms * (curve.k / (Math.pow(psm, curve.alpha) - 1));
+        let t = state.tms * (curve.k / (Math.pow(psm, curve.alpha) - 1));
+        // Clamp top end for log scale stability
+        t = Math.min(50, t);
         dataPoints.push({ x: psm * state.is, y: t });
     }
 
-    const currentFaultPoint = {
-        x: state.faultCurrent,
-        y: state.tms * (curve.k / (Math.pow(state.faultCurrent / state.is, curve.alpha) - 1))
-    };
+    const psmCurrent = state.faultCurrent / state.is;
+    let currentFaultPoint = null;
+
+    if (psmCurrent > 1.01) {
+        currentFaultPoint = {
+            x: state.faultCurrent,
+            y: state.tms * (curve.k / (Math.pow(psmCurrent, curve.alpha) - 1))
+        };
+    }
 
     tccChart.data.datasets[0].data = dataPoints;
-    tccChart.data.datasets[1].data = [currentFaultPoint];
-    tccChart.update();
+    tccChart.data.datasets[1].data = currentFaultPoint ? [currentFaultPoint] : [];
+    
+    // Update without animation to prevent display artifacts during rapid slider movement
+    tccChart.update('none');
 }
 
 function initChart() {
@@ -121,6 +125,7 @@ function initChart() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: false,
             scales: {
                 x: {
                     type: 'logarithmic',
