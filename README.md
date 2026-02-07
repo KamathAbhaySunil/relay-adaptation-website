@@ -65,5 +65,5 @@ Then visit `http://localhost:8000`.
 RelayAdapt uses nodal impedance formulation to solve potential fault current levels. When an IBR is active, the relay sensing logic adjusts the **Plug Setting Multiplier (PSM)** to maintain a constant **Coordination Time Interval (CTI)**, preventing relay blindness and ensuring system stability.
 
 ---
-**Developed by Abhay Sk & Antigravity AI**  
-*Advanced Protection Systems Lab*
+**Developed by Kamath Abhay Sunil**  
+*Switch Gears and Protection*
